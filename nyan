@@ -1,0 +1,1 @@
+PERL5LIB=~emarcotte/src/perl-nyan perl -MAthena::Lib $(which prove) --harness TAP::Nyan $*
