@@ -13,7 +13,7 @@ sub new {
 	my ($class, $args) = @_;
 
 	my $self = $class->SUPER::new({
-		%{$args||{}},
+		%{$args || {}},
 		verbosity => -3,
 	});
 
@@ -63,6 +63,12 @@ sub make_parser {
 			push(@{$self->{trail}}, $self->rainbow_txt($self->mark($result)));
 
 			$self->print_status;
+		},
+	);
+
+	$parser->callback(
+		ALL => sub {
+			my ($result) = @_;
 		}
 	);
 
@@ -78,17 +84,13 @@ sub _get_parser_args {
 	my ($self, $job) = @_;
 	my $args = $self->SUPER::_get_parser_args($job);
 	$args->{merge} = 1;
-	return $args;
+		return $args;
 }
 
 sub summary {
-	my ($self, $aggregation) = @_;
-	$self->{finished} = $aggregation;
+	my ($self, @args) = @_;
+	$self->{finished} = [@args];
 	print $self->print_status();
-}
-
-sub verbosity {
-	return 0;
 }
 
 sub mark {
@@ -143,12 +145,14 @@ sub print_status {
 		} (0..3);
 	print $str;
 
-	if( my $aggregation = $self->{finished} ) {
-		foreach my $file (sort keys ( %{$self->{results}} ) ) {
-			if( grep { ! $_->is_ok } @{$self->{results}{$file}}) {
+	if( my ($aggregation, $interupted) = @{$self->{finished} || []} ) {
+		my @parsers = $aggregation->parsers;
+		foreach my $parser (@parsers) {
+			my $file = $self->{parserjobs}{$parser};
+			if( $parser->exit || grep { ! $_->is_ok } @{$self->{results}{$file}}) {
 				print "**** $file\n";
-				foreach my $result (@{$self->{results}{$file}}) {
-					print $result->raw(), "\n";
+				foreach my $result (@{$parser->{__results}}) {
+					print "  ", $result->raw(), "\n";
 				}
 			}
 		}

@@ -1,1 +1,10 @@
-PERL5LIB=~emarcotte/src/perl-nyan perl -MAthena::Lib $(which prove) --harness TAP::Nyan $*
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use App::Prove;
+
+my $app = App::Prove->new;
+$app->process_args(@ARGV, '--harness', 'TAP::Nyan');
+$app->run;
